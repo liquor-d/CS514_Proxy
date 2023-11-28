@@ -1,0 +1,12 @@
+Start from ProxyServer.main
+Request parser is in HTTPRequest file
+
+1 - GET (including parser)
+2 - POST (including parser)
+3 - 404 & 502 response (When to send)
+
+Later:
+4 - Cache algorithm
+5 - Block list
+6 - Other methods?
+7 - User interact

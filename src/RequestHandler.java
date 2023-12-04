@@ -27,10 +27,22 @@ public class RequestHandler extends Thread{
             outputStream = socket.getOutputStream();
 
             HTTPRequest request = new HTTPRequest(inputStream, threadId);
+
+            // TODO check blacklist
+            // TODO check cache
+
             if(request.getMethod() != null && request.getMethod().equals("CONNECT")){
                 ConnectHandler connectHandler = new ConnectHandler(request.getHost(), request.getPort(),
                     inputStream, outputStream, threadId);
                 connectHandler.connect();
+            }
+            else if (request.getMethod() != null && request.getMethod().equals("GET")){
+                GetHandler getHandler = new GetHandler(request.getUrlString(), outputStream, threadId);
+                getHandler.get();
+            }
+            // TODO: handle POST request
+            else{
+                System.out.println("request not implemented, :" + request.toString() + " in thread: ");
             }
 
             inputStream.close();

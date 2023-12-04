@@ -8,7 +8,9 @@ public class HTTPRequest {
     private String rawData;
     private String method;
     private String host;
+    private String urlString;
     private int port;
+
     public HTTPRequest(InputStream inputStream, int threadId){
         this.threadId = threadId;
         System.out.println("Begin parsing HTTPRequest in thread: " + this.threadId);
@@ -20,6 +22,7 @@ public class HTTPRequest {
                 request += inputLine+"\n";
             }
             this.rawData = request;
+//            System.out.println("Request rawdata is : " + rawData);
         }
         catch (IOException e){
             System.out.println("IOException in RequestHandler " + threadId);
@@ -43,14 +46,22 @@ public class HTTPRequest {
         int urlPos = rawData.substring(methodPos+1).indexOf(" ");
         if(urlPos != -1){
             String url = rawData.substring(methodPos + 1, methodPos + 1 + urlPos);
+            this.urlString = url;
+//            System.out.println("url: " + url);
             if (this.method.equals("CONNECT")) {
                 String[] urls = url.split(":");
                 this.host = urls[0];
                 this.port = Integer.parseInt(urls[1]);
-            } else {
-                // TO DO!!!
-                // POST/GET host name parsing
-                System.out.println("*****GET/POST request host name invalid!!");
+            }
+            else if (this.method.equals("GET")) {
+                System.out.println("GET Request url: " + url);
+            }
+            //TODO
+            else if (this.method.equals("POST")) {
+                System.out.println("POST method not implemented yet!!");
+            }
+            else {
+                System.out.println("*****Unknown request method!!");
             }
             System.out.println("Request: " + method + " " + host);
         }
@@ -59,4 +70,17 @@ public class HTTPRequest {
     public int getThreadId() { return this.threadId;}
     public String getHost() { return this.host;}
     public int getPort() { return this.port;}
+    public String getUrlString() {
+        return this.urlString;
+    }
+
+    // TODO: handle 404
+    public static void handle404Error() {
+        System.out.println("404 Error");
+    }
+
+    @Override
+    public String toString(){
+        return "method: " + method + " host: " + host + " port: " + port;
+    }
 }

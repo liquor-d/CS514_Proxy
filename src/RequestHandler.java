@@ -42,7 +42,7 @@ public class RequestHandler extends Thread{
             }
             // TODO: handle POST request
             else{
-                System.out.println("request not implemented, :" + request.toString() + " in thread: ");
+                System.out.println("request not implemented, :" + request + " in thread: ");
             }
 
             inputStream.close();

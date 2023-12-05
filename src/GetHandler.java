@@ -1,3 +1,5 @@
+import com.sun.net.httpserver.HttpHandler;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -30,7 +32,7 @@ public class GetHandler {
 
             // check if the path ends with an image extension
             for (String ext : imageExtensions) {
-                if (path.endsWith(ext)) {
+                if (path.contains(ext)) {
                     return ext.substring(1);
                 }
             }
@@ -49,6 +51,7 @@ public class GetHandler {
             connection.setRequestMethod("GET");
             inputStream = connection.getInputStream();
             int responseCode = connection.getResponseCode();
+            String type = connection.getContentType();
             String responseMessage = connection.getResponseMessage();
 
             // handle image stream
@@ -58,7 +61,7 @@ public class GetHandler {
                 // read image from url
                 BufferedImage imgResource = ImageIO.read(inputStream);
                 System.out.println("imgResource: " + imgResource);
-                if (imgResource != null) {                          // found image at given url
+                if (imgResource != null) {
                     String responseHeader = "HTTP/1.1 200 OK" + CRLF + CRLF;
                     proxyOut.write(responseHeader.getBytes());
                     ImageIO.write(imgResource, extension, proxyOut);
@@ -67,8 +70,8 @@ public class GetHandler {
                 }
             }
             // handle text stream
-            else if (responseCode == HttpURLConnection.HTTP_OK) {
-                System.out.println("Response Code: " + responseCode + "responseMessage: " + responseMessage + ", in thread: " + threadId);
+            else if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+                System.out.println("Response Code: " + responseCode + ", responseMessage: " + responseMessage + ", in thread: " + threadId);
                 // get response body
                 BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
                 String inputLine;
@@ -78,13 +81,24 @@ public class GetHandler {
                 }
                 in.close();
                 // combine response header, message, and body
-                String response = "HTTP/1.1 " + responseCode + " " + responseMessage
-                        + CRLF
-                        + "Content-Length: " + responseBody.toString().getBytes().length + CRLF
-                        + CRLF
-                        + responseBody.toString()
-                        + CRLF + CRLF;
-                System.out.println("Response from GET: " + CRLF + response+ " in thread: " + threadId + "\n");
+                String response = null;
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    response = "HTTP/1.1 " + responseCode + " " + responseMessage
+                            + CRLF
+                            + "Content-Type: " + type
+                            + CRLF
+                            + "Content-Length: " + responseBody.toString().getBytes().length + CRLF
+                            + CRLF
+                            + responseBody.toString()
+                            + CRLF + CRLF;
+                }
+                else {
+                    response = "HTTP/1.1 " + responseCode + " " + responseMessage
+                            + CRLF
+                            + responseBody.toString()
+                            + CRLF;
+                }
+//                System.out.println("Response from GET: " + CRLF + response+ " in thread: " + threadId + "\n");
 
                 proxyOut.write(response.getBytes());
                 proxyOut.flush();
@@ -95,16 +109,17 @@ public class GetHandler {
             // handle 404 error or other errors
             else {
                 HTTPRequest.handle404Error();
-                System.out.println("! NOT OK FOR Response Code: " + responseCode + "responseMessage: " + responseMessage + " in thread: " + threadId);
+                System.out.println("! NOT OK FOR Response Code: " + responseCode + ", responseMessage: " + responseMessage + " in thread: " + threadId);
             }
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("IOException when connecting to url: "+ url  + " in thread: " + threadId);
+            HTTPRequest.handle404Error();
         }
         catch (IOException e) {
             System.out.println("IOException when connecting to url: "+ url  + " in thread: " + threadId);
             e.printStackTrace();
         }
-        catch (Exception e) {
-            System.out.println("Exception when connecting to url: "+ url  + " in thread: " + threadId);
-            e.printStackTrace();
-        }
+
     }
 }

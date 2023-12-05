@@ -2,6 +2,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URL;
 
 public class HTTPRequest {
     private int threadId;
@@ -52,6 +53,7 @@ public class HTTPRequest {
                 String[] urls = url.split(":");
                 this.host = urls[0];
                 this.port = Integer.parseInt(urls[1]);
+                System.out.println("Request: " + method + " " + host);
             }
             else if (this.method.equals("GET")) {
                 System.out.println("GET Request url: " + url);
@@ -63,7 +65,6 @@ public class HTTPRequest {
             else {
                 System.out.println("*****Unknown request method!!");
             }
-            System.out.println("Request: " + method + " " + host);
         }
     }
     public String getMethod() { return this.method;}
@@ -76,7 +77,7 @@ public class HTTPRequest {
 
     // TODO: handle 404
     public static void handle404Error() {
-        System.out.println("404 Error");
+        System.out.println("404 Error occurred!");
     }
 
     @Override

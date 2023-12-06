@@ -35,19 +35,6 @@ public class HTTPConnector extends Thread {
         catch (IOException e) {
             logger.log(Level.SEVERE, "HTTPConnector with thread id " + this.threadId + " experienced IOException: " + e.getMessage(), e);
 
-        }finally{
-//            // Close resources safely
-//            closeQuietly(inputStream);
-//            closeQuietly(outputStream);
-        }
-    }
-    private void closeQuietly(AutoCloseable resource) {
-        if (resource != null) {
-            try {
-                resource.close();
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Failed to close resource in HTTPConnector with thread id" + threadId, e);
-            }
         }
     }
 }

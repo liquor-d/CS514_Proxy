@@ -32,7 +32,6 @@ public class RequestHandler extends Thread{
             InputStream inputStream = clientSocket.getInputStream();
             OutputStream outputStream = clientSocket.getOutputStream();
 
-            // TODO use static factory approach to create a request object
             HTTPRequest request = new HTTPRequest(inputStream, threadId);
 
             // TODO check blacklist
@@ -47,7 +46,7 @@ public class RequestHandler extends Thread{
                 GetHandler getHandler = new GetHandler(request.getUrlString(), outputStream, threadId);
                 getHandler.get();
             }
-            // TODO: handle POST request
+
             else if (request.getMethod() != null && request.getMethod().equals("POST")){
                 logger.log(Level.WARNING, "POST Method is being implemented!");
                 PostHandler postHandler = new PostHandler(request, outputStream, threadId);
@@ -73,17 +72,9 @@ public class RequestHandler extends Thread{
             logger.log(Level.WARNING, "Thread interrupted", e);
             Thread.currentThread().interrupt();
         } finally {
-            closeQuietly(clientSocket, threadId);
+            HTTPUtil.closeQuietly(clientSocket, threadId);
         }
     }
 
-    public static void closeQuietly(AutoCloseable resource, int threadId) {
-        if (resource != null) {
-            try {
-                resource.close();
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Failed to close resource in RequestHandler {0}", new Object[]{threadId, e.getMessage()});
-            }
-        }
-    }
+
 }

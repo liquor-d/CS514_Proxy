@@ -6,6 +6,15 @@ public class HTTPUtil {
 
     private static final Logger logger = Logger.getLogger(HTTPUtil.class.getName());
 
+    public static void closeQuietly(AutoCloseable resource, int threadId) {
+        if (resource != null) {
+            try {
+                resource.close();
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Failed to close resource in RequestHandler {0}", new Object[]{threadId, e.getMessage()});
+            }
+        }
+    }
     public static void logResponseCode(HTTPRequest httpRequest, int responseCode, int threadId) {
         String methodType = httpRequest != null ? httpRequest.getMethod() : "Unknown";
         String url = httpRequest != null ? httpRequest.getUrlString() : "Unknown URL";

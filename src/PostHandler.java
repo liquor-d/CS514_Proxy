@@ -70,8 +70,8 @@ public class PostHandler {
         } catch (IOException e) {
             throw new IOException("IO Error while handling POST request: " + e.getMessage(), e);
         } finally {
-            RequestHandler.closeQuietly(serverInput, threadId);
-            RequestHandler. closeQuietly(clientOutput, threadId);
+            HTTPUtil.closeQuietly(serverInput, threadId);
+            HTTPUtil.closeQuietly(clientOutput, threadId);
             if (connection != null) {
                 connection.disconnect();
             }

@@ -9,8 +9,6 @@ public class ConnectHandler {
     private Socket socket;
     private String host;
     private int port;
-    private InputStream inputStream;
-    private OutputStream outputStream;
     private InputStream proxyIn;
     private OutputStream proxyOut;
     public ConnectHandler(String host, int port, InputStream proxyIn, OutputStream proxyOut, int threadId){
@@ -30,8 +28,8 @@ public class ConnectHandler {
 
     public void connect(){
         try{
-            inputStream = socket.getInputStream();
-            outputStream = socket.getOutputStream();
+            InputStream inputStream = socket.getInputStream(); // response data from server
+            OutputStream outputStream = socket.getOutputStream(); // request data to server
 
             String response = "HTTP/1.1 200 CONNECTION ESTABLISHED\r\n\r\n";
             proxyOut.write(response.getBytes());

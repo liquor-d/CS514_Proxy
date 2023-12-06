@@ -7,8 +7,6 @@ public class RequestHandler extends Thread{
     private Socket socket;
     private static int idCounter;
     private int threadId;
-    private InputStream inputStream;
-    private OutputStream outputStream;
 
     public RequestHandler(Socket socket) throws IOException {
         this.socket = socket;
@@ -23,8 +21,8 @@ public class RequestHandler extends Thread{
     public void run(){
         System.out.println("RequestHandler " + this.threadId + " running");
         try{
-            inputStream = socket.getInputStream();
-            outputStream = socket.getOutputStream();
+            InputStream inputStream = socket.getInputStream();
+            OutputStream outputStream = socket.getOutputStream();
 
             HTTPRequest request = new HTTPRequest(inputStream, threadId);
 

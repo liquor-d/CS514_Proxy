@@ -23,7 +23,7 @@ public class HTTPRequest {
                 request += inputLine+"\n";
             }
             this.rawData = request;
-//            System.out.println("Request rawdata is : " + rawData);
+            System.out.println("Request rawdata is : " + rawData);
         }
         catch (IOException e){
             System.out.println("IOException in RequestHandler " + threadId);

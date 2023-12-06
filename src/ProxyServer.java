@@ -16,7 +16,7 @@ public class ProxyServer implements Runnable {
         this.stopped = true;
     }
     private synchronized boolean isRunning() {
-        return this.stopped == false;
+        return !this.stopped;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class ProxyServer implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        Thread proxyServer = new Thread(new ProxyServer(13318));
-        proxyServer.run();
+        Thread proxyServerThread = new Thread(new ProxyServer(13318));
+        proxyServerThread.run();
     }
 }

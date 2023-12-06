@@ -1,18 +1,26 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+/**
+ * ProxyServer is starter class, responsible for accept
+ *
+ */
 public class ProxyServer implements Runnable {
+    private static final Logger logger = Logger.getLogger(ProxyServer.class.getName());
+
     private volatile boolean stopped = false;
     private int port;
     private ServerSocket serverSocket;
     public ProxyServer(int port) throws IOException {
         this.port = port;
         serverSocket = new ServerSocket(port);
-        System.out.println("Server established on port " + port);
+        logger.log(Level.INFO, "Server established on port {0}", port);
     }
     public synchronized void stop() {
-        System.out.println("Proxy Server stopping");
+        logger.log(Level.INFO, "Proxy Server stopping");
         this.stopped = true;
     }
     private synchronized boolean isRunning() {
@@ -21,7 +29,7 @@ public class ProxyServer implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("ProxyServer Running");
+        logger.log(Level.INFO, "ProxyServer Running");
         try {
             while (this.isRunning() && serverSocket.isBound() && !serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
@@ -29,7 +37,8 @@ public class ProxyServer implements Runnable {
                 newThread.start();
             }
         } catch (IOException e) {
-            System.out.println("Error creating server socket @PORT:" + port);
+            logger.log(Level.SEVERE, "Error creating server socket @PORT: {0}", port);
+            logger.log(Level.SEVERE, e.getMessage(), e);
             e.printStackTrace();
         }
     }

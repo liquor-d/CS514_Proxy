@@ -79,6 +79,7 @@ public class GetHandler {
                 while ((inputLine = in.readLine()) != null) {      // read response line by line
                     responseBody.append(inputLine);
                 }
+
                 in.close();
                 // combine response header, message, and body
                 String response = null;

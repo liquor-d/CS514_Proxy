@@ -14,7 +14,7 @@ public class RequestHandler extends Thread{
 
     public RequestHandler(Socket socket) throws IOException {
         this.clientSocket = socket;
-        socket.setSoTimeout(20000);    // timeout window
+        socket.setSoTimeout(5000);    // timeout window
         threadId = idCounter.incrementAndGet();
         String remoteAddress = socket.getInetAddress().getHostAddress();
         int remotePort = socket.getPort();
@@ -36,6 +36,7 @@ public class RequestHandler extends Thread{
 
             // TODO check blacklist
             // TODO check cache
+            // LFU, LRU, Interface // LRU
 
             if(request.getMethod() != null && request.getMethod().equals("CONNECT")){
                 ConnectHandler connectHandler = new ConnectHandler(request.getHost(), request.getPort(),
@@ -48,7 +49,6 @@ public class RequestHandler extends Thread{
             }
 
             else if (request.getMethod() != null && request.getMethod().equals("POST")){
-                logger.log(Level.WARNING, "POST Method is being implemented!");
                 PostHandler postHandler = new PostHandler(request, outputStream, threadId);
                 postHandler.post();
             }else{
@@ -75,6 +75,5 @@ public class RequestHandler extends Thread{
             HTTPUtil.closeQuietly(clientSocket, threadId);
         }
     }
-
-
 }
+// 1.

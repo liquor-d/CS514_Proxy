@@ -15,7 +15,7 @@ public class PostHandler {
         this.threadId = threadId;
     }
 
-    public void post() throws IOException {
+    public void post() throws IOException { // 5-- //
         URL url;
         try {
             url = new URL(httpRequest.getUrlString());
@@ -32,7 +32,7 @@ public class PostHandler {
         // Set up the request properties
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
-        // TODO: copy non-essential headers
+        // copy essential headers
         Map<String, String> headers = httpRequest.getHeaders();
         for (Map.Entry<String, String> header : headers.entrySet()) {
             connection.setRequestProperty(header.getKey(), header.getValue());
@@ -71,11 +71,9 @@ public class PostHandler {
             throw new IOException("IO Error while handling POST request: " + e.getMessage(), e);
         } finally {
             HTTPUtil.closeQuietly(serverInput, threadId);
-            HTTPUtil.closeQuietly(clientOutput, threadId);
             if (connection != null) {
                 connection.disconnect();
             }
         }
     }
-
 }

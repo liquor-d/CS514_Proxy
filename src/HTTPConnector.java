@@ -34,7 +34,6 @@ public class HTTPConnector extends Thread {
         }
         catch (IOException e) {
             logger.log(Level.SEVERE, "HTTPConnector with thread id " + this.threadId + " experienced IOException: " + e.getMessage(), e);
-
         }
     }
 }

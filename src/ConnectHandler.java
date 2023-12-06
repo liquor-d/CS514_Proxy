@@ -40,11 +40,11 @@ public class ConnectHandler {
             Thread clientToProxy = new HTTPConnector(inputStream, proxyOut);
             clientToProxy.start();
 
-            Thread ProxyToClient = new HTTPConnector(proxyIn, outputStream);
-            ProxyToClient.start();
+            Thread proxyToClient = new HTTPConnector(proxyIn, outputStream);
+            proxyToClient.start();
 
             clientToProxy.join();
-            ProxyToClient.join();
+            proxyToClient.join();
 
             inputStream.close();
             outputStream.close();

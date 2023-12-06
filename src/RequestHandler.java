@@ -14,7 +14,7 @@ public class RequestHandler extends Thread{
 
     public RequestHandler(Socket socket) throws IOException {
         this.clientSocket = socket;
-        // socket.setSoTimeout(3000);    // timeout window
+        socket.setSoTimeout(20000);    // timeout window
         threadId = idCounter.incrementAndGet();
         String remoteAddress = socket.getInetAddress().getHostAddress();
         int remotePort = socket.getPort();
@@ -51,7 +51,7 @@ public class RequestHandler extends Thread{
             else if (request.getMethod() != null && request.getMethod().equals("POST")){
                 logger.log(Level.WARNING, "POST Method is being implemented!");
                 PostHandler postHandler = new PostHandler(request, outputStream, threadId);
-                // postHandler.post();
+                postHandler.post();
             }else{
                 logger.log(Level.WARNING, "Unsupported request method in thread {0}: " + request.getMethod(), threadId);
             }
@@ -73,11 +73,11 @@ public class RequestHandler extends Thread{
             logger.log(Level.WARNING, "Thread interrupted", e);
             Thread.currentThread().interrupt();
         } finally {
-            closeQuietly(clientSocket);
+            closeQuietly(clientSocket, threadId);
         }
     }
 
-    private void closeQuietly(AutoCloseable resource) {
+    public static void closeQuietly(AutoCloseable resource, int threadId) {
         if (resource != null) {
             try {
                 resource.close();

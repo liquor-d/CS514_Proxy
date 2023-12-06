@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 public class HTTPRequest {
@@ -14,12 +16,15 @@ public class HTTPRequest {
     private String host;
     private String urlString;
     private int port;
-
     private String postBody;
+
+    private Map<String, String> headers;
 
     public HTTPRequest(InputStream inputStream, int threadId) throws IOException{
         this.threadId = threadId;
+        this.headers = new HashMap<>();
         logger.log(Level.INFO, "Begin parsing HTTPRequest in thread: {0}", this.threadId);
+
         BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder requestBuilder = new StringBuilder();
         String inputLine;
@@ -31,6 +36,14 @@ public class HTTPRequest {
             if(firstLine){
                 firstLine = false;
                 logger.log(Level.INFO, "The first line for the HttpRequest in thread {0}: " + inputLine, threadId);
+            }else{
+                // load the headers
+                int colonIndex = inputLine.indexOf(":");
+                if (colonIndex != -1) {
+                    String headerName = inputLine.substring(0, colonIndex).trim();
+                    String headerValue = inputLine.substring(colonIndex + 1).trim();
+                    headers.put(headerName, headerValue);
+                }
             }
             requestBuilder.append(inputLine).append("\n");
             if (inputLine.startsWith("Content-Length: ")) {
@@ -186,5 +199,9 @@ public class HTTPRequest {
     @Override
     public String toString(){
         return "method: " + method + " host: " + host + " port: " + port;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 }

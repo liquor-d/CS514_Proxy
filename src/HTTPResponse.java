@@ -1,55 +1,65 @@
+import java.util.HashMap;
+import java.util.Map;
+
 public class HTTPResponse {
-    private String content;
     private String startLine;
-    private boolean noStore;
-    private boolean noCache;
-    private boolean mustRevalidate;
-    private int maxAge;
-    private String expire;
-    private String lastModified;
-    public HTTPResponse(String startLine, String content){
-        this.startLine = startLine;
-        this.content = content;
-        noStore = false;
-        noCache = false;
-        mustRevalidate = false;
-        maxAge = -1;
-        expire = null;
+    private Map<String, String> headers;
+    private String body;
 
-        this.parse();
-    }
-    public void parse(){
-        if(content.indexOf("no-cache") != -1){
-            noCache = true;
-        }
-
-        if(content.indexOf("no-store") != -1){
-            noStore = true;
-        }
-
-        if(content.indexOf("must-revalidate") != -1){
-            mustRevalidate = true;
-        }
-
-        int maxAgePos = content.indexOf("max-age");
-        if(maxAgePos != -1){
-            maxAge = Integer.parseInt(content.substring(maxAgePos+8));
-        }
-
-        int expPos = content.indexOf("Expires: ");
-        if(expPos != -1){
-            int expEndPos = content.indexOf(" GMT");
-            expire = content.substring(expPos+9, expEndPos+4);
-//            expire = content.substring(expPos+9, expPos+38); // not GMT
-        }
-
-        int lastModifyPos = content.indexOf("Last-Modified: ");
-        if(lastModifyPos != -1){
-            int lastModifyEndPos = lastModifyPos + content.substring(lastModifyPos).indexOf("\r\n");
-            lastModified = content.substring(lastModifyPos + 15, lastModifyEndPos);
-        }
-
-        //TODO: if cookie
+    public HTTPResponse(String responseContent) {
+        this.headers = new HashMap<>();
+        parseResponse(responseContent);
     }
 
+    private void parseResponse(String responseContent) {
+        String[] lines = responseContent.split("\r\n");
+
+
+        StringBuilder bodyBuilder = new StringBuilder();
+        boolean isStartLine = true;
+        boolean isHeaderSection = false;
+        for (String line : lines) {
+            if(isStartLine){
+                startLine = line;
+                isStartLine = false;
+                isHeaderSection = true;
+                continue;
+            }
+            if (line.isEmpty()) {
+                isHeaderSection = false; // End of headers, start of body
+                continue;
+            }
+
+            if (isHeaderSection) {
+                int colonIndex = line.indexOf(":");
+                if (colonIndex != -1) {
+                    String headerName = line.substring(0, colonIndex).trim();
+                    String headerValue = line.substring(colonIndex + 1).trim(); // Trim to remove the first empty space
+                    headers.put(headerName, headerValue);
+                } else {
+                    startLine = line; // The first line is the start line
+                }
+            } else {
+                bodyBuilder.append(line).append("\r\n");
+            }
+        }
+
+        body = bodyBuilder.toString().trim(); // Trim to remove the last new line
+    }
+
+    public String getStartLine() {
+        return startLine;
+    }
+
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public String getBody() {
+        return body;
+    }
 }

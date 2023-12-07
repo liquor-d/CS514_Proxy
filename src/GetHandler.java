@@ -90,7 +90,7 @@ public class GetHandler {
 //                System.out.println(responseBody.toString());
 //                System.out.println("\n\n");
 
-                HTTPResponse classResponse = new HTTPResponse(startLine, responseBody.toString());
+                HTTPResponse classResponse = new HTTPResponse(responseBody.toString());
                 // TODO: cache operation
 
                 // ==================================

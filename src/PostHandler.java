@@ -15,7 +15,7 @@ public class PostHandler {
         this.threadId = threadId;
     }
 
-    public void post() throws IOException { // 5-- //
+    public void post() throws IOException {
         URL url;
         try {
             url = new URL(httpRequest.getUrlString());
@@ -49,14 +49,9 @@ public class PostHandler {
             HTTPUtil.logResponseCode(httpRequest, connection.getResponseCode(), threadId);
         }
         // Read the response from the server
-        InputStream serverInput;
+        InputStream serverInput = null;
         try {
             serverInput = connection.getInputStream();
-        } catch (IOException e) {
-            throw new IOException("Error reading response from " + url, e);
-        }
-
-        try {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             byte[] data = new byte[65536];
             int nRead;
@@ -68,9 +63,11 @@ public class PostHandler {
             clientOutput.write(buffer.toByteArray());
             clientOutput.flush();
         } catch (IOException e) {
-            throw new IOException("IO Error while handling POST request: " + e.getMessage(), e);
-        } finally {
-            HTTPUtil.closeQuietly(serverInput, threadId);
+            throw new IOException("Error reading response from " + url + " or sending back to client", e);
+        }finally {
+            if(serverInput != null){
+                HTTPUtil.closeQuietly(serverInput, threadId);
+            }
             if (connection != null) {
                 connection.disconnect();
             }

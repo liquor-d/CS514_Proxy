@@ -36,7 +36,20 @@ public class HTTPUtil {
                 return "Bad Request (400)";
             case HttpURLConnection.HTTP_INTERNAL_ERROR:
                 return "Internal Server Error (500)";
-            // Add other cases as needed
+            case HttpURLConnection.HTTP_MOVED_PERM:
+                return "Resource permanently moved (301)";
+            case HttpURLConnection.HTTP_MOVED_TEMP:
+                return "Temporary redirect (302)";
+            case HttpURLConnection.HTTP_SEE_OTHER:
+                return "See other resource (303)";
+            case HttpURLConnection.HTTP_NOT_MODIFIED:
+                return "Not modified (304)";
+            case HttpURLConnection.HTTP_BAD_GATEWAY:
+                return "Bad Gateway (502)";
+            case HttpURLConnection.HTTP_UNAVAILABLE:
+                return "Service Unavailable (503)";
+            case HttpURLConnection.HTTP_GATEWAY_TIMEOUT:
+                return "Gateway Timeout (504)";
             default:
                 return "Unhandled response code: " + responseCode;
         }

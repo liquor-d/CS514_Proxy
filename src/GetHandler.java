@@ -15,11 +15,13 @@ public class GetHandler {
     private InputStream inputStream;
     private OutputStream proxyOut;
     final String CRLF = "\r\n";
+    private String startLine; // TODO: parse startLine -> url, remove input 'url'
     private final String[] imageExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg"};
 
 
 
-    public GetHandler(String url, OutputStream proxyOut, int threadId){
+    public GetHandler(String startLine, String url, OutputStream proxyOut, int threadId){
+        this.startLine = startLine;
         this.threadId = threadId;
         this.url = url;
         this.proxyOut = proxyOut;
@@ -80,6 +82,19 @@ public class GetHandler {
                     responseBody.append(inputLine);
                 }
 
+                // ==================================
+                // add cache
+                // ==================================
+
+//                System.out.println("Response context\n\n"); // test
+//                System.out.println(responseBody.toString());
+//                System.out.println("\n\n");
+
+                HTTPResponse classResponse = new HTTPResponse(startLine, responseBody.toString());
+                // TODO: cache operation
+
+                // ==================================
+
                 in.close();
                 // combine response header, message, and body
                 String response = null;
@@ -99,12 +114,10 @@ public class GetHandler {
                             + responseBody.toString()
                             + CRLF;
                 }
-//                System.out.println("Response from GET: " + CRLF + response+ " in thread: " + threadId + "\n");
+//                System.out.println("Response from GET: " + CRLF + response+ " in thread: " + threadId + "\n"); //test
 
                 proxyOut.write(response.getBytes());
                 proxyOut.flush();
-
-                // TODO cache response
 
             }
             // handle 404 error or other errors

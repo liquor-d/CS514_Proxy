@@ -17,6 +17,7 @@ public class HTTPRequest {
     private String urlString;
     private int port;
     private String postBody;
+    private String startLine;
 
     private Map<String, String> headers;
 
@@ -35,6 +36,7 @@ public class HTTPRequest {
             // For debugging the parser
             if(firstLine){
                 firstLine = false;
+                this.startLine = inputLine;
                 logger.log(Level.INFO, "The first line for the HttpRequest in thread {0}: " + inputLine, threadId);
             }else{
                 // load the headers
@@ -190,6 +192,7 @@ public class HTTPRequest {
     public String getPostBody(){
         return this.postBody;
     }
+    public String getStartLine() {return this.startLine; }
 
     // TODO: handle 404
     public static void handle404Error() {

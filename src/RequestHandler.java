@@ -44,7 +44,7 @@ public class RequestHandler extends Thread{
                 connectHandler.connect();
             }
             else if (request.getMethod() != null && request.getMethod().equals("GET")){
-                GetHandler getHandler = new GetHandler(request.getUrlString(), outputStream, threadId);
+                GetHandler getHandler = new GetHandler(request.getStartLine(), request.getUrlString(), outputStream, threadId);
                 getHandler.get();
             }
 

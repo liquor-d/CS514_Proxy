@@ -44,7 +44,8 @@ public class ProxyServer implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        Thread proxyServerThread = new Thread(new ProxyServer(13318));
-        proxyServerThread.run();
+        ConsoleManager consoleManager = new ConsoleManager();
+        Thread consoleManagerThread = new Thread(consoleManager);
+        consoleManagerThread.start();
     }
 }

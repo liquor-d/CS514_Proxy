@@ -17,10 +17,12 @@ public class HTTPRequest {
     private String urlString;
     private int port;
     private String postBody;
+    private boolean isBlocked;
 
     private Map<String, String> headers;
 
     public HTTPRequest(InputStream inputStream, int threadId) throws IOException{
+        isBlocked = false;
         this.threadId = threadId;
         this.headers = new HashMap<>();
         logger.log(Level.INFO, "Begin parsing HTTPRequest in thread: {0}", this.threadId);
@@ -101,12 +103,14 @@ public class HTTPRequest {
             // Handle the malformed request case, e.g., set method to null or throw an exception
         }
     }
+
     // Utility method to check if the method is valid
     private boolean isValidHttpMethod(String method) {
         return method.equals("GET") || method.equals("POST") || method.equals("PUT") ||
                 method.equals("DELETE") || method.equals("HEAD") || method.equals("OPTIONS") ||
                 method.equals("PATCH") || method.equals("CONNECT");
     }
+
     private void parseHostAndPort() {
         try {
             if (rawData == null || rawData.isEmpty()) {
@@ -128,6 +132,14 @@ public class HTTPRequest {
 
             String url = rawData.substring(methodPos + 1, urlPos).trim();
             this.urlString = url;
+
+            // check BlockList
+            if (BlockListManager.isBlocked(url)) {
+                isBlocked = true;
+                logger.log(Level.INFO, "Blocked host: {0}", url);
+                return;
+            }
+            System.out.println("The " + url + " is not blocked");
 
             switch (method.toUpperCase()) {
                 case "CONNECT":
@@ -189,6 +201,9 @@ public class HTTPRequest {
     }
     public String getPostBody(){
         return this.postBody;
+    }
+    public boolean isBlocked() {
+        return isBlocked;
     }
 
     // TODO: handle 404

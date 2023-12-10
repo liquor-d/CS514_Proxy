@@ -141,6 +141,7 @@ public class HTTPRequest {
                     break;
                 case "GET":
                     // TODO: move the logic of parsing getMethod here parseGetMethod();
+                    parseGetMethod();
                     logger.log(Level.INFO, "GET Request URL: {0}", urlString);
                 case "PUT":
                 case "DELETE":
@@ -152,6 +153,10 @@ public class HTTPRequest {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error parsing host and port: {0}", e.getMessage());
         }
+    }
+
+    private void parseGetMethod() {
+        logger.log(Level.INFO, "GET Request URL: {0}", urlString);
     }
 
     private void parseConnectMethod() {

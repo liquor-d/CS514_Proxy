@@ -57,74 +57,74 @@ public class GetHandler {
             String responseMessage = connection.getResponseMessage();
 
             // handle image stream
-            String extension = checkImageType(url);
-            System.out.println("extension: " + extension);
-            if (extension != null) {
+            String ImageExtension = checkImageType(url);
+            System.out.println("extension: " + ImageExtension); // test
+            if (ImageExtension != null) {
                 // read image from url
                 BufferedImage imgResource = ImageIO.read(inputStream);
                 System.out.println("imgResource: " + imgResource);
                 if (imgResource != null) {
                     String responseHeader = "HTTP/1.1 200 OK" + CRLF + CRLF;
                     proxyOut.write(responseHeader.getBytes());
-                    ImageIO.write(imgResource, extension, proxyOut);
+                    ImageIO.write(imgResource, ImageExtension, proxyOut);
                 } else {
                     HTTPRequest.handle404Error();
                 }
+                return;
             }
-            // handle text stream
-            else if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
-                System.out.println("Response Code: " + responseCode + ", responseMessage: " + responseMessage + ", in thread: " + threadId);
-                // get response body
-                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-                String inputLine;
-                StringBuffer responseBody = new StringBuffer();
-                while ((inputLine = in.readLine()) != null) {      // read response line by line
-                    responseBody.append(inputLine);
-                }
 
-                // ==================================
-                // add cache
-                // ==================================
+            // handle text stream
+            System.out.println("Response Code: " + responseCode + ", responseMessage: " + responseMessage + ", in thread: " + threadId);
+            // get response body
+            BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+            String inputLine;
+            StringBuffer responseBody = new StringBuffer();
+            while ((inputLine = in.readLine()) != null) {      // read response line by line
+                responseBody.append(inputLine);
+            }
+            in.close();
+
+            // ==================================
+            // add cache
+            // ==================================
 
 //                System.out.println("Response context\n\n"); // test
 //                System.out.println(responseBody.toString());
 //                System.out.println("\n\n");
 
-                HTTPResponse classResponse = new HTTPResponse(responseBody.toString());
-                // TODO: cache operation
+            HTTPResponse classResponse = new HTTPResponse(responseBody.toString());
+            // TODO: cache operation
 
-                // ==================================
+            // ==================================
 
-                in.close();
-                // combine response header, message, and body
-                String response = null;
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    response = "HTTP/1.1 " + responseCode + " " + responseMessage
-                            + CRLF
-                            + "Content-Type: " + type
-                            + CRLF
-                            + "Content-Length: " + responseBody.toString().getBytes().length + CRLF
-                            + CRLF
-                            + responseBody.toString()
-                            + CRLF + CRLF;
-                }
-                else {
-                    response = "HTTP/1.1 " + responseCode + " " + responseMessage
-                            + CRLF
-                            + responseBody.toString()
-                            + CRLF;
-                }
-//                System.out.println("Response from GET: " + CRLF + response+ " in thread: " + threadId + "\n"); //test
-
-                proxyOut.write(response.getBytes());
-                proxyOut.flush();
-
+            // combine response header, message, and body
+            String response = null;
+            if (responseCode >= 200 && responseCode < 300) {
+                response = "HTTP/1.1 " + responseCode + " " + responseMessage
+                        + CRLF
+                        + "Content-Type: " + type
+                        + CRLF
+                        + "Content-Length: " + responseBody.toString().getBytes().length + CRLF
+                        + CRLF
+                        + responseBody.toString()
+                        + CRLF + CRLF;
             }
+            else if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+                response = "HTTP/1.1 " + responseCode + " " + responseMessage
+                        + CRLF
+                        + responseBody.toString()
+                        + CRLF;
+            }
+//                System.out.println("Response from GET: " + CRLF + response+ " in thread: " + threadId + "\n"); //test
             // handle 404 error or other errors
             else {
                 HTTPRequest.handle404Error();
                 System.out.println("! NOT OK FOR Response Code: " + responseCode + ", responseMessage: " + responseMessage + " in thread: " + threadId);
+                return;
             }
+
+            proxyOut.write(response.getBytes());
+            proxyOut.flush();
         }
         catch (FileNotFoundException e) {
             System.out.println("IOException when connecting to url: "+ url  + " in thread: " + threadId);

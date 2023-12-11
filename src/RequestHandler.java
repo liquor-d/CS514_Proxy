@@ -1,7 +1,7 @@
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,6 +11,7 @@ public class RequestHandler extends Thread{
     private Socket clientSocket;
     private static AtomicInteger idCounter = new AtomicInteger(0);
     private int threadId;
+    private BlockListManager blockListManager;
 
     public RequestHandler(Socket socket) throws IOException {
         this.clientSocket = socket;
@@ -35,6 +36,12 @@ public class RequestHandler extends Thread{
             HTTPRequest request = new HTTPRequest(inputStream, threadId);
 
             // TODO check blacklist
+            if (request.isBlocked()) {
+                logger.log(Level.INFO, "Blocked host: {0}", request.getHost());
+                sendForbidden(outputStream);
+                return;
+            }
+
             // TODO check cache
             // LFU, LRU, Interface // LRU
 
@@ -75,5 +82,16 @@ public class RequestHandler extends Thread{
             HTTPUtil.closeQuietly(clientSocket, threadId);
         }
     }
+
+    private void sendForbidden(OutputStream outputStream) throws IOException {
+        System.out.println("Sending forbidden...");
+        String fullResponse =
+                "HTTP/1.1 403 Forbidden\r\n" +
+                        "Content-Type: text/html\r\n" +
+                        "\r\n";
+        outputStream.write(fullResponse.getBytes());
+        outputStream.flush();
+    }
+
 }
 // 1.

@@ -98,7 +98,7 @@ public class GetHandler {
             // ==================================
 
             // combine response header, message, and body
-            String response = null;
+            String response;
             if (responseCode >= 200 && responseCode < 300) {
                 response = "HTTP/1.1 " + responseCode + " " + responseMessage
                         + CRLF
@@ -106,13 +106,13 @@ public class GetHandler {
                         + CRLF
                         + "Content-Length: " + responseBody.toString().getBytes().length + CRLF
                         + CRLF
-                        + responseBody.toString()
+                        + responseBody
                         + CRLF + CRLF;
             }
             else if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
                 response = "HTTP/1.1 " + responseCode + " " + responseMessage
                         + CRLF
-                        + responseBody.toString()
+                        + responseBody
                         + CRLF;
             }
 //                System.out.println("Response from GET: " + CRLF + response+ " in thread: " + threadId + "\n"); //test

@@ -7,6 +7,14 @@ public class BlockListManager {
     private static final Set<String> blockList = new HashSet<>();
 
     public static synchronized void addBlockedSite(String domain) {
+        // remove http:// or https://
+        if (domain.contains("://")) {
+            domain = domain.substring(domain.indexOf("://") + 3);
+        }
+        // remove www.
+        if (domain.contains("www.")) {
+            domain = domain.substring(domain.indexOf("www.") + 4);
+        }
         blockList.add(domain);
     }
 
@@ -15,6 +23,14 @@ public class BlockListManager {
     }
 
     public static synchronized boolean isBlocked(String url) {
+        // remove http:// or https://
+        if (url.contains("://")) {
+            url = url.substring(url.indexOf("://") + 3);
+        }
+        // remove www.
+        if (url.contains("www.")) {
+            url = url.substring(url.indexOf("www.") + 4);
+        }
         // remove port number
         if (url.contains(":")) {
             url = url.substring(0, url.indexOf(":"));

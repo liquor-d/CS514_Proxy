@@ -18,7 +18,7 @@ public class RequestHandler extends Thread{
     public RequestHandler(Socket socket, ResponseCache cache) throws IOException {
         this.cache = cache;
         this.clientSocket = socket;
-        socket.setSoTimeout(10000);    // timeout window
+        socket.setSoTimeout(100000);    // timeout window
         threadId = idCounter.incrementAndGet();
         String remoteAddress = socket.getInetAddress().getHostAddress();
         int remotePort = socket.getPort();
@@ -38,9 +38,8 @@ public class RequestHandler extends Thread{
 
             HTTPRequest request = new HTTPRequest(inputStream, threadId);
 
-            // TODO check blacklist
+            // check blacklist
             if (request.isBlocked()) {
-                logger.log(Level.INFO, "Blocked host: {0}", request.getHost());
                 sendForbidden(outputStream);
                 return;
             }

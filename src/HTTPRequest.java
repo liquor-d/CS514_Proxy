@@ -138,7 +138,7 @@ public class HTTPRequest {
             // check BlockList
             if (BlockListManager.isBlocked(url)) {
                 isBlocked = true;
-                logger.log(Level.INFO, "Blocked host: {0}", url);
+                logger.log(Level.INFO, "Host: {0}", url + " is blocked successfully !");
                 return;
             }
             System.out.println("The " + url + " is not blocked");

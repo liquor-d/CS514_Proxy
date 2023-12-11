@@ -29,4 +29,6 @@ public interface ResponseCache {
      * @param key The key for the cache entry to be deleted.
      */
     void delete(String key);
+
+    int size();
 }

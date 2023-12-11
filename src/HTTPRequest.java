@@ -227,4 +227,8 @@ public class HTTPRequest {
     public Map<String, String> getHeaders() {
         return headers;
     }
+
+    public void addHeader(String key, String val) {
+        headers.put(key, val);
+    }
 }

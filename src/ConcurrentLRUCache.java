@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -31,12 +32,23 @@ public class ConcurrentLRUCache implements ResponseCache{
     public CachedResponse get(String key) {
         readLock.lock();
         try {
-            if (!cacheMap.containsKey(key)) {
-                return null;
-            }
             Node node = cacheMap.get(key);
-            moveToHead(node);
-            return node.response;
+            if (node != null && node.response.isExpired()) {
+                writeLock.lock();
+                try {
+                    if (node.response.isExpired()) {
+                        removeCache(key);
+                        cacheMap.remove(key);
+                        return null;
+                    }
+                } finally {
+                    writeLock.unlock();
+                }
+            }
+            if (node != null) {
+                moveToHead(node);
+            }
+            return node != null ? node.response : null;
         } finally {
             readLock.unlock();
         }
@@ -90,73 +102,114 @@ public class ConcurrentLRUCache implements ResponseCache{
         }
     }
     public void addCache(Node newNode){
-        if(head == null){
-            this.head = newNode;
-            this.tail = newNode;
-        }
-        else if(head == tail){
-            this.head = newNode;
-            newNode.next = tail;
-            tail.prev = newNode;
-        }
-        else {
-            newNode.next = head;
-            head.prev = newNode;
-            head = newNode;
+        writeLock.lock();
+        try {
+            if (head == null) {
+                this.head = newNode;
+                this.tail = newNode;
+            } else if (head == tail) {
+                this.head = newNode;
+                newNode.next = tail;
+                tail.prev = newNode;
+            } else {
+                newNode.next = head;
+                head.prev = newNode;
+                head = newNode;
+            }
+        }finally {
+            writeLock.unlock();
         }
     }
-    public void removeCache(String findStartLine){
-        if(head == null) return;
-        else if(head == tail){
-            if(head.startLine == findStartLine){
-                head = null;
-                tail = null;
-            }
-        }
-        else if(head.startLine == findStartLine){
-            head.next.prev = null;
-            head = head.next;
-        }
-        else if(tail.startLine == findStartLine){
-            tail.prev.next = null;
-            tail = tail.prev;
-        }
-        else{
-            Node curr = head;
-            while(curr != null){
-                if(curr.startLine == findStartLine){
-                    curr.prev.next = curr.next;
-                    curr.next.prev = curr.prev;
-                    break;
+    @Override
+    public int size(){
+        return cacheMap.size();
+    }
+    public void removeCache(String findStartLine) {
+        writeLock.lock();
+        try {
+            if (head == null) return;
+            else if (head == tail) {
+                if (head.startLine.equals(findStartLine)) {
+                    head = null;
+                    tail = null;
                 }
-                curr = curr.next;
+            } else if (head.startLine.equals(findStartLine)) {
+                head.next.prev = null;
+                head = head.next;
+            } else if (tail.startLine.equals(findStartLine)) {
+                tail.prev.next = null;
+                tail = tail.prev;
+            } else {
+                Node curr = head;
+                while (curr != null) {
+                    if (curr.startLine.equals(findStartLine)) {
+                        curr.prev.next = curr.next;
+                        curr.next.prev = curr.prev;
+                        break;
+                    }
+                    curr = curr.next;
+                }
             }
+        }finally {
+            writeLock.unlock();
         }
     }
     private void moveToHead(Node node) {
-        // Remove the node from its current position
-        removeCache(node.startLine); // Removes node from the linked list
-        // Add the node back at the head
-        addCache(node); // Adds node to the head of the linked list
+        writeLock.lock();
+        try {
+            // Remove the node from its current position
+            removeCache(node.startLine); // Removes node from the linked list
+            // Add the node back at the head
+            addCache(node); // Adds node to the head of the linked list
+        }finally {
+            writeLock.unlock();
+        }
     }
     private void removeLeastRecentlyUsed() {
-        if (tail == null) {
-            return; // Cache is empty, nothing to remove
-        }
+        writeLock.lock();
+        try {
+            if (tail == null) {
+                return; // Cache is empty, nothing to remove
+            }
 
-        // Remove the node from the cacheMap
-        cacheMap.remove(tail.startLine);
+            // Remove the node from the cacheMap
+            cacheMap.remove(tail.startLine);
 
-        // Remove the node from the doubly linked list
-        if (head == tail) {
-            // The cache has only one node
-            head = null;
-            tail = null;
-        } else {
-            // More than one node in the cache
-            tail = tail.prev;
-            tail.next = null;
+            // Remove the node from the doubly linked list
+            if (head == tail) {
+                // The cache has only one node
+                head = null;
+                tail = null;
+            } else {
+                // More than one node in the cache
+                tail = tail.prev;
+                tail.next = null;
+            }
+        }finally {
+            writeLock.unlock();
         }
     }
-//    public checkCache()
+    public void removeExpiredEntries() {
+        writeLock.lock();
+        try {
+            Iterator<Map.Entry<String, Node>> it = cacheMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, Node> entry = it.next();
+                if (entry.getValue().response.isExpired()) {
+                    it.remove(); // Remove from the cacheMap
+                    // Additionally, remove it from the linked list if necessary
+                    removeNodeFromLinkedList(entry.getValue());
+                }
+            }
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    private void removeNodeFromLinkedList(Node node) {
+        if (node.prev != null) node.prev.next = node.next;
+        if (node.next != null) node.next.prev = node.prev;
+        if (node == head) head = node.next;
+        if (node == tail) tail = node.prev;
+    }
 }

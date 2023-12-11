@@ -10,13 +10,16 @@ import java.util.logging.Logger;
  */
 public class ProxyServer implements Runnable {
     private static final Logger logger = Logger.getLogger(ProxyServer.class.getName());
+    private static final int CACHE_CAPACITY = 100;
 
     private volatile boolean stopped = false;
     private int port;
     private ServerSocket serverSocket;
+    private ResponseCache cache;
     public ProxyServer(int port) throws IOException {
         this.port = port;
         serverSocket = new ServerSocket(port);
+        this.cache = new ConcurrentLRUCache(CACHE_CAPACITY);
         logger.log(Level.INFO, "Server established on port {0}", port);
     }
     public synchronized void stop() {
@@ -31,9 +34,12 @@ public class ProxyServer implements Runnable {
     public void run() {
         logger.log(Level.INFO, "ProxyServer Running");
         try {
+            CacheManager cacheManager = new CacheManager((ConcurrentLRUCache) cache);
+            Thread cacheManagerThread = new Thread(cacheManager);
+            cacheManagerThread.start();
             while (this.isRunning() && serverSocket.isBound() && !serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
-                RequestHandler newThread = new RequestHandler(socket);
+                RequestHandler newThread = new RequestHandler(socket, cache);
                 newThread.start();
             }
         } catch (IOException e) {

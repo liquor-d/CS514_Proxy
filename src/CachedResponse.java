@@ -1,17 +1,37 @@
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class CachedResponse {
+    private static final Logger logger = Logger.getLogger(CachedResponse.class.getName());
     private HTTPResponse httpResponse;
     private long expiryTime;
+
+    private long cachedTime;
 
     public CachedResponse(HTTPResponse httpResponse, long expiryTime) {
         this.httpResponse = httpResponse;
         this.expiryTime = expiryTime;
+        this.cachedTime = System.currentTimeMillis();
     }
+
     public HTTPResponse getHttpResponse() {
         return httpResponse;
     }
 
     public long getExpiryTime() {
         return expiryTime;
+    }
+
+    public long getCachedTime() {
+        return cachedTime;
+    }
+
+    public void setCachedTime(long cachedTime) {
+        this.cachedTime = cachedTime;
     }
 
     // Checks if the cached response is expired
@@ -43,10 +63,10 @@ public class CachedResponse {
     // Static method to check if the response should be cached
     public static boolean shouldBeCached(HTTPResponse httpResponse) {
         String cacheControl = httpResponse.getHeader("Cache-Control");
+        // for convenience, we treat no-cache as no-store
         if (cacheControl != null && cacheControl.contains("no-store")) {
             return false;
         }
-        // Add other checks as necessary
         return true;
     }
 
@@ -63,14 +83,18 @@ public class CachedResponse {
         } else {
             String expires = httpResponse.getHeader("Expires");
             if (expires != null) {
-                // Convert Expires header to time in milliseconds
-                // long expiresTimeMillis = /* Convert expires to milliseconds */;
-                // return expiresTimeMillis;
+                try {
+                    SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
+                    formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+                    return formatter.parse(expires).getTime();
+                } catch (ParseException e) {
+                    logger.log(Level.WARNING, "Failure to parse Expires field, use Default expiration time instead.");
+                }
             }
-        }
 
-        // Default expiry time of 10 seconds
-        return currentTimeMillis + 10000L;
+            // Default expiry time of 10 seconds
+            return currentTimeMillis + 10000L;
+        }
     }
 }
 

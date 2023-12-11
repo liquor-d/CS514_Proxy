@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,10 +13,12 @@ public class RequestHandler extends Thread{
     private static AtomicInteger idCounter = new AtomicInteger(0);
     private int threadId;
     private BlockListManager blockListManager;
+    private ResponseCache cache;
 
-    public RequestHandler(Socket socket) throws IOException {
+    public RequestHandler(Socket socket, ResponseCache cache) throws IOException {
+        this.cache = cache;
         this.clientSocket = socket;
-        socket.setSoTimeout(5000);    // timeout window
+        socket.setSoTimeout(10000);    // timeout window
         threadId = idCounter.incrementAndGet();
         String remoteAddress = socket.getInetAddress().getHostAddress();
         int remotePort = socket.getPort();
@@ -42,17 +45,15 @@ public class RequestHandler extends Thread{
                 return;
             }
 
-            // TODO check cache
-            // LFU, LRU, Interface // LRU
-
             if(request.getMethod() != null && request.getMethod().equals("CONNECT")){
                 ConnectHandler connectHandler = new ConnectHandler(request.getHost(), request.getPort(),
                     inputStream, outputStream, threadId);
                 connectHandler.connect();
             }
             else if (request.getMethod() != null && request.getMethod().equals("GET")){
-                GetHandler getHandler = new GetHandler(request.getStartLine(), request.getUrlString(), outputStream, threadId);
-                getHandler.get();
+                GetHandler getHandler = new GetHandler(request, outputStream, threadId);
+                CachedGetHandler cachedGetHandler = new CachedGetHandler(getHandler, cache, threadId);
+                cachedGetHandler.get(); // get request will be enabled with cache
             }
 
             else if (request.getMethod() != null && request.getMethod().equals("POST")){
@@ -73,6 +74,9 @@ public class RequestHandler extends Thread{
         catch (IOException e) {
             logger.log(Level.WARNING, "IOException in RequestHandler in thread {0}", threadId);
             // e.printStackTrace();
+        }
+        catch (ParseException e){
+            logger.log(Level.WARNING, "ParseException in RequestHandler in thread {0}", threadId);
         }
         catch (InterruptedException e) {
             logger.log(Level.SEVERE, "InterruptedException in RequestHandler {0}: {1}", new Object[]{threadId, e.getMessage()});

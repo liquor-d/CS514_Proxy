@@ -33,7 +33,8 @@ public class HTTPResponse {
             if (isHeaderSection) {
                 int colonIndex = line.indexOf(":");
                 if (colonIndex != -1) {
-                    String headerName = line.substring(0, colonIndex).trim();
+                    // case-insensitive store of name
+                    String headerName = line.substring(0, colonIndex).trim().toLowerCase();
                     String headerValue = line.substring(colonIndex + 1).trim(); // Trim to remove the first empty space
                     headers.put(headerName, headerValue);
                 } else {
@@ -51,8 +52,9 @@ public class HTTPResponse {
         return startLine;
     }
 
+    // case-insensitive fetching
     public String getHeader(String name) {
-        return headers.get(name);
+        return headers.get(name.toLowerCase());
     }
 
     public Map<String, String> getHeaders() {

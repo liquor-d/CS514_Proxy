@@ -7,11 +7,14 @@ public class ConsoleManager implements Runnable {
     private ProxyServer proxyServer;
     private static final String ANSI_BLUE = "\u001B[34m";
     private static final String ANSI_RESET = "\u001B[0m";
-    private static final String INSTRUCTIONS = "Enter command to configure the Proxy Server: \n"+
-            "\tADD [url] \t\t- block the specified URL\n"+
-            "\tREMOVE [url] \t\t- remove URL from blocklist\n"+
-            "\tEXIT \t\t\t\t- safely exit program\n"+
-            "\tVIEW \t\t\t- print the Blocked List";
+    private static final String INSTRUCTIONS =
+            "+-----------------------------------------------+\n" +
+            "| Enter command to configure the Proxy Server:  |\n" +
+            "|   ADD [URL]     - block the specified URL     |\n" +
+            "|   REMOVE [URL]  - remove URL from blocklist   |\n" +
+            "|   EXIT          - safely exit program         |\n" +
+            "|   VIEW          - print the Blocked List      |\n" +
+            "+-----------------------------------------------+";
 
     public ConsoleManager() throws IOException {
         proxyServer = new ProxyServer(13318);
@@ -22,8 +25,8 @@ public class ConsoleManager implements Runnable {
     @Override
     public void run() {
         Scanner scanner = new Scanner(System.in);
+        printMgmtStyle(INSTRUCTIONS);
         while (running) {
-            printMgmtStyle(INSTRUCTIONS);
             String command = scanner.nextLine().toLowerCase();
             String[] commandParts = command.split(" ");
             switch (commandParts[0]) {
@@ -31,13 +34,11 @@ public class ConsoleManager implements Runnable {
                     viewBlockList();
                     break;
                 case "add":
-                    printMgmtStyle("Enter URL to block:");
                     String urlToAdd = commandParts[1];
                     BlockListManager.addBlockedSite(urlToAdd);
                     printMgmtStyle(urlToAdd + " added to block list.");
                     break;
                 case "remove":
-                    printMgmtStyle("Enter URL to unblock:");
                     String urlToRemove = commandParts[1];
                     BlockListManager.removeBlockedSite(urlToRemove);
                     printMgmtStyle(urlToRemove + " removed from block list.");
@@ -46,7 +47,8 @@ public class ConsoleManager implements Runnable {
                     exitProxyServer();
                     break;
                 default:
-                    printMgmtStyle("Invalid command. Try again.");
+                    printMgmtStyle("Invalid command. Please try again.");
+                    printMgmtStyle(INSTRUCTIONS);
                     break;
             }
         }

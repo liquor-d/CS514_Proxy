@@ -34,7 +34,7 @@ public class CachedResponse {
         this.cachedTime = cachedTime;
     }
 
-    // Checks if the cached response is expired
+    // Check if the cached response is expired
     public boolean isExpired() {
         return System.currentTimeMillis() > expiryTime;
     }
@@ -60,10 +60,9 @@ public class CachedResponse {
         return httpResponse.getHeader("Last-Modified");
     }
 
-    // Static method to check if the response should be cached
+    // Static method to check if the response should be cached according to no-store
     public static boolean shouldBeCached(HTTPResponse httpResponse) {
         String cacheControl = httpResponse.getHeader("Cache-Control");
-        // for convenience, we treat no-cache as no-store
         if (cacheControl != null && cacheControl.contains("no-store")) {
             return false;
         }

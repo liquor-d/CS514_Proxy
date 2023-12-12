@@ -34,10 +34,10 @@ public class CachedGetHandler {
             // If expired and not must-revalidate, continue to fetch from server without modifying client request
         }
 
-        // Step 1: Setup connection and send request
+        // Setup connection and send request
         getHandler.setupConnectionAndSendRequest();
 
-        // Step 2: Fetch response from server
+        // Fetch response from server
         String responseString = getHandler.fetchResponseFromServer();
 
         // Convert the response string into an HTTPResponse object
@@ -49,7 +49,7 @@ public class CachedGetHandler {
             return;
         }
 
-        // Step 2.5: Check if the response should be cached
+        // Check if the response should be cached
         if (CachedResponse.shouldBeCached(httpResponse)) {
             // Calculate the expiry time for the cache
             long expiryTime = CachedResponse.calculateExpiryTime(httpResponse);
@@ -64,7 +64,7 @@ public class CachedGetHandler {
                     new Object[]{requestKey, cache.size()});
         }
 
-        // Step 3: Flush response to the client
+        // Flush response to the client
         getHandler.flushResponseToClientAndDisconnect(responseString);
     }
     private void updateAndServeCachedResponse(CachedResponse cachedResponse) throws IOException {

@@ -25,7 +25,7 @@ public class HTTPConnector extends Thread {
             int amountBytesToSend;
 
             while ((amountBytesToSend = inputStream.read(responseBuffer, 0 , responseBuffer.length)) != -1) {
-                outputStream.write(responseBuffer, 0, amountBytesToSend);          // send them
+                outputStream.write(responseBuffer, 0, amountBytesToSend);
                 outputStream.flush();
             }
         }catch(SocketTimeoutException e){

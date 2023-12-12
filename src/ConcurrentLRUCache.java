@@ -157,10 +157,8 @@ public class ConcurrentLRUCache implements ResponseCache{
     private void moveToHead(Node node) {
         writeLock.lock();
         try {
-            // Remove the node from its current position
-            removeCache(node.startLine); // Removes node from the linked list
-            // Add the node back at the head
-            addCache(node); // Adds node to the head of the linked list
+            removeCache(node.startLine);
+            addCache(node);
         }finally {
             writeLock.unlock();
         }
@@ -169,13 +167,10 @@ public class ConcurrentLRUCache implements ResponseCache{
         writeLock.lock();
         try {
             if (tail == null) {
-                return; // Cache is empty, nothing to remove
+                return;
             }
-
-            // Remove the node from the cacheMap
             cacheMap.remove(tail.startLine);
 
-            // Remove the node from the doubly linked list
             if (head == tail) {
                 // The cache has only one node
                 head = null;
@@ -197,7 +192,7 @@ public class ConcurrentLRUCache implements ResponseCache{
                 Map.Entry<String, Node> entry = it.next();
                 if (entry.getValue().response.isExpired()) {
                     it.remove(); // Remove from the cacheMap
-                    // Additionally, remove it from the linked list if necessary
+                    // Remove it from the linked list
                     removeNodeFromLinkedList(entry.getValue());
                 }
             }

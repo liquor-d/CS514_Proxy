@@ -32,7 +32,7 @@ public class PostHandler {
         // Set up the request properties
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
-        // copy essential headers
+        // Copy headers
         Map<String, String> headers = httpRequest.getHeaders();
         for (Map.Entry<String, String> header : headers.entrySet()) {
             connection.setRequestProperty(header.getKey(), header.getValue());
@@ -65,6 +65,7 @@ public class PostHandler {
         } catch (IOException e) {
             throw new IOException("Error reading response from " + url + " or sending back to client", e);
         }finally {
+            // Make sure resources are released
             if(serverInput != null){
                 HTTPUtil.closeQuietly(serverInput, threadId);
             }

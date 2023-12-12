@@ -57,7 +57,7 @@ public class GetHandler {
 
         // Append headers
         connection.getHeaderFields().forEach((key, valueList) -> {
-            if (key != null) { // Exclude the status line entry
+            if (key != null) { // Exclude status line entry
                 valueList.forEach(value -> responseBuilder.append(key).append(": ").append(value).append("\r\n"));
             }
         });

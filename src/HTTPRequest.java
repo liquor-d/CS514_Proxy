@@ -59,7 +59,7 @@ public class HTTPRequest {
             throw new IOException("Fail to read any data for the HTTP Request in thread " + threadId
                     + ", maybe the sender doesn't send any");
         }
-        // Handling scenarios for POST (and other methods with a body)
+        // Handling scenarios for POST
         if (hasContentLength) {
             requestBuilder.append("\n");
             char[] buffer = new char[contentLength];
@@ -83,10 +83,10 @@ public class HTTPRequest {
         parseHostAndPort();
     }
 
-    private void parseMethod() {
+    private void parseMethod() throws IOException {
+        // Handle the empty or null rawData case
         if (rawData == null || rawData.isEmpty()) {
             logger.log(Level.WARNING, "Empty or null rawData in HTTPRequest in thread {0}", this.threadId);
-            // Handle the empty or null rawData case, e.g., set method to null or throw an exception
             return;
         }
         int methodPos = rawData.indexOf(" ");
@@ -97,12 +97,12 @@ public class HTTPRequest {
                 this.method = potentialMethod;
             } else {
                 logger.log(Level.WARNING, "Invalid HTTP method received: " + potentialMethod);
-                // Handle the invalid method case, e.g., set to a default or throw an exception
+                throw new IOException("Invalid HTTP method received");
             }
         } else {
             logger.log(Level.WARNING, "Malformed HTTP request found in thread {0} when parsing its HTTP method: \n"
                     + rawData, this.threadId);
-            // Handle the malformed request case, e.g., set method to null or throw an exception
+            throw new IOException("Malformed HTTP request found");
         }
     }
 
@@ -117,7 +117,6 @@ public class HTTPRequest {
         try {
             if (rawData == null || rawData.isEmpty()) {
                 logger.log(Level.WARNING, "Empty or null rawData in HTTPRequest in thread {0}", this.threadId);
-                // Handle the empty or null rawData case, e.g., set method to null or throw an exception
                 return;
             }
             int methodPos = rawData.indexOf(" ");
@@ -135,7 +134,7 @@ public class HTTPRequest {
             String url = rawData.substring(methodPos + 1, urlPos).trim();
             this.urlString = url;
 
-            // check BlockList
+            // Check BlockList
             if (BlockListManager.isBlocked(url)) {
                 isBlocked = true;
                 logger.log(Level.INFO, "Host: {0}", url + " is blocked successfully !");
@@ -152,7 +151,6 @@ public class HTTPRequest {
                     logger.log(Level.INFO, "POST Request URL: {0}", urlString);
                     break;
                 case "GET":
-                    // TODO: move the logic of parsing getMethod here parseGetMethod();
                     parseGetMethod();
                     logger.log(Level.INFO, "GET Request URL: {0}", urlString);
                 case "PUT":
@@ -187,7 +185,7 @@ public class HTTPRequest {
     }
 
     private void parsePostMethod() {
-        // Assuming the body is separated by a blank line after headers
+        // Assuming the body is separated by a blank line after headers, which can be \n\n or \r\n\r\n
         int bodyIndex = rawData.indexOf("\n\n");
         if(bodyIndex == -1){
             rawData.indexOf("\r\n\r\n");
@@ -212,11 +210,6 @@ public class HTTPRequest {
     public String getStartLine() {return this.startLine; }
     public boolean isBlocked() {
         return this.isBlocked;
-    }
-
-    // TODO: handle 404
-    public static void handle404Error() {
-        System.out.println("404 Error occurred");
     }
 
     @Override

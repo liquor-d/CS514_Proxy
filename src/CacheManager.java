@@ -21,7 +21,7 @@ public class CacheManager implements Runnable {
                 logger.log(Level.INFO, "CacheManager finished to clean up expired cache");
             }
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // Restore interrupted status
+            Thread.currentThread().interrupt();
             logger.log(Level.WARNING, "CacheManager thread interrupted");
         }
     }

@@ -68,11 +68,10 @@ public class ConsoleManager implements Runnable {
     }
 
     private void exitProxyServer() {
-        // Implement the logic to safely shut down the proxy server
+        // Safely shut down the proxy server
         printMgmtStyle("Shutting down the proxy server...");
         running = false;
         proxyServer.stop();
-        // Additional shutdown logic here
         printMgmtStyle("Proxy server shut down successfully.");
     }
 

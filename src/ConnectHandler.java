@@ -30,8 +30,8 @@ public class ConnectHandler {
 
     public void connect() throws IOException, InterruptedException{
         try{
-            InputStream inputStream = socket.getInputStream(); // response data from server
-            OutputStream outputStream = socket.getOutputStream(); // request data to server
+            InputStream inputStream = socket.getInputStream(); // Response data from server
+            OutputStream outputStream = socket.getOutputStream(); // Request data to server
 
             String response = "HTTP/1.1 200 CONNECTION ESTABLISHED\r\n\r\n";
             proxyOut.write(response.getBytes());

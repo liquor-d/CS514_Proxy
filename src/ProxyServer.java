@@ -34,6 +34,7 @@ public class ProxyServer implements Runnable {
     public void run() {
         logger.log(Level.INFO, "ProxyServer Running");
         try {
+            // Start cache cleaning thread
             CacheManager cacheManager = new CacheManager((ConcurrentLRUCache) cache);
             Thread cacheManagerThread = new Thread(cacheManager);
             cacheManagerThread.start();

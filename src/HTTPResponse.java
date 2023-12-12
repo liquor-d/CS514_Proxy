@@ -14,7 +14,7 @@ public class HTTPResponse {
         this.headers = new HashMap<>();
         parseResponse(responseContent);
     }
-    // constructor for testing LRU cache
+    // Constructor exclusively used for testing LRU cache implementation
     public HTTPResponse(String startLine, String body){
         this.headers = new HashMap<>();
         this.startLine = startLine;
@@ -48,7 +48,7 @@ public class HTTPResponse {
             if (isHeaderSection) {
                 int colonIndex = line.indexOf(":");
                 if (colonIndex != -1) {
-                    // case-insensitive store of name
+                    // Case-insensitive store of name
                     String headerName = line.substring(0, colonIndex).trim().toLowerCase();
                     String headerValue = line.substring(colonIndex + 1).trim(); // Trim to remove the first empty space
                     headers.put(headerName, headerValue);
@@ -72,16 +72,12 @@ public class HTTPResponse {
         return headers.get(name.toLowerCase());
     }
 
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
     public String getBody() {
         return body;
     }
 
     public void updateHeader(String key, String value) {
-        headers.put(key, value);
+        headers.put(key.toLowerCase(), value);
     }
     @Override
     public String toString() {
@@ -95,7 +91,7 @@ public class HTTPResponse {
             responseBuilder.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
         }
 
-        // Append an extra new line to separate headers from the body
+        // Append an extra new line
         responseBuilder.append("\r\n");
 
         // Append body
